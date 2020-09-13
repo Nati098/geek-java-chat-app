@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.Controller">
+
+   <stylesheets>
+      <URL value="@/css/style.css" />
+   </stylesheets>
+
+   <right>
+      <ListView fx:id="clientList" visible="false" managed="false" maxWidth="150"
+                onMouseClicked="#onActionClientList"/>
+   </right>
+
+   <center>
+      <BorderPane>
+
+         <top>
+            <BorderPane fx:id="bpAuth" visible="true" managed="true">
+               <BorderPane.margin>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+               </BorderPane.margin>
+
+               <center>
+                  <HBox>
+                     <TextField fx:id="tfLogin" promptText="login" HBox.hgrow="ALWAYS"/>
+                     <PasswordField fx:id="pfPassword" promptText="password" HBox.hgrow="ALWAYS"
+                                    onAction="#onActionBtnAuth"/>
+                     <Button text="auth" onAction="#onActionBtnAuth" minWidth="50"/>
+                     <Button text="reg" onAction="#onActionBtnReg" minWidth="50"/>
+                  </HBox>
+               </center>
+
+
+            </BorderPane>
+         </top>
+
+         <center>
+            <BorderPane>
+               <BorderPane.margin>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+               </BorderPane.margin>
+
+               <center>
+                  <ScrollPane fitToWidth="true" fitToHeight="true">
+                     <content>
+                        <TextArea fx:id="taChat" editable="false" wrapText="true" style="-fx-spacing: inherit"/>
+                     </content>
+                  </ScrollPane>
+               </center>
+            </BorderPane>
+         </center>
+
+         <bottom>
+            <BorderPane fx:id="bpMessage" visible="false" managed="false">
+               <BorderPane.margin>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+               </BorderPane.margin>
+               <center>
+                  <TextField fx:id="tfMessage" onAction="#onActionTfMessage" />
+               </center>
+               <right>
+                  <Button fx:id="btnSend" BorderPane.alignment="CENTER" contentDisplay="CENTER" onAction="#onActionBtnSend" text="Send"/>
+               </right>
+            </BorderPane>
+         </bottom>
+
+      </BorderPane>
+   </center>
+
+
+</BorderPane>
