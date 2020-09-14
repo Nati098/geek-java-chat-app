@@ -100,6 +100,10 @@ public class CustomServer {
         }
     }
 
+    public void handleInactiveUser(ClientHandler user) {
+
+    }
+
     public AuthService getAuthService() {
         return authService;
     }

@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import static data.Commands.*;
 
@@ -25,8 +26,13 @@ public class ClientHandler {
 
             new Thread(() -> {
                 try {
+                    socket.setSoTimeout(10000);
                     authentication();
                     readMessages();
+                }
+                catch (SocketTimeoutException ste) {
+                    System.out.println("Session timeout");
+//                    server.handleInactiveUser(this);
                 }
                 catch (IOException e) {
                     e.printStackTrace();
@@ -59,12 +65,14 @@ public class ClientHandler {
                 String login = msgParts[1];
                 if (savedNick != null) {
                     if (!server.isLoginAuthenticated(login)) {
+                        socket.setSoTimeout(0);
+                        System.out.println("Session time is set to infinity");
+
                         id = savedNick;
                         sendMessage(AUTHOK.getCommand() + " " + savedNick);
 
                         server.subscribe(this);
                         //server.broadcast(this, "is online");
-
                         System.out.println(String.format("User %s connected", id));
                         break;
                     } else {
@@ -82,9 +90,8 @@ public class ClientHandler {
                     continue;
                 }
 
-                boolean b = server.getAuthService()
-                        .registration(msgParts[1], msgParts[2], msgParts[3]);
-                if (b) {
+                if (server.getAuthService()
+                        .registration(msgParts[1], msgParts[2], msgParts[3])) {
                     sendMessage(REG_OK.getCommand());
                 } else {
                     sendMessage(REG_NO.getCommand());
@@ -121,7 +128,7 @@ public class ClientHandler {
         System.out.println(String.format("%s disconnected", id));
         server.unsubscribe(this);
 
-        server.broadcast(this, "went out from chat");
+//        server.broadcast(this, "went out from chat");
 
         try {
             dis.close();

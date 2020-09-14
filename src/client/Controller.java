@@ -130,7 +130,7 @@ public class Controller implements Initializable {
             new Thread(() -> {
                 try {
                     while (true) {
-                        String msg = dis.readUTF();
+                        String msg = dis. readUTF();
                         if (msg.startsWith(AUTHOK.getCommand())) {
                             nickname = msg.split(" ", 2)[1];  // /authok nick
                             setAuthenticated(true);
@@ -138,7 +138,8 @@ public class Controller implements Initializable {
                         }
 
                         if (msg.startsWith(REG_OK.getCommand())) {
-                            regController.appendToTextArea("Sign up is successful");
+                            taChat.appendText("Sign up is successful! Sign In, please\n");
+                            Platform.runLater(() -> regStage.hide());
                         }
                         if (msg.startsWith(REG_NO.getCommand())) {
                             regController.appendToTextArea("Sign up failed: user already exists");
@@ -231,7 +232,14 @@ public class Controller implements Initializable {
 
     public void onActionClientList(MouseEvent mouseEvent) {
         String receiver = clientList.getSelectionModel().getSelectedItem();
-        tfMessage.setText("/w " + receiver + " ");
+        if (!receiver.equals(nickname)){
+            tfMessage.setText("/w " + receiver + " ");
+        }
+        else {
+            if (tfMessage.getText().startsWith(PRIVATE_MSG.getCommand())) {
+                tfMessage.clear();
+            }
+        }
     }
 
     private String formatMsg(String msg) {
