@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="center" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/10.0.2-internal" fx:controller="client.RegController">
+
+    <HBox>
+        <Label prefWidth="100" text="Login:" />
+        <TextField fx:id="tfLogin" promptText="login" HBox.hgrow="ALWAYS">
+         <HBox.margin>
+            <Insets />
+         </HBox.margin></TextField>
+      <VBox.margin>
+         <Insets left="20.0" right="20.0" top="20.0" />
+      </VBox.margin>
+    </HBox>
+
+    <HBox>
+        <Label prefWidth="100" text="Password:" />
+        <PasswordField fx:id="pfPassword" promptText="password" HBox.hgrow="ALWAYS" />
+      <VBox.margin>
+         <Insets left="20.0" right="20.0" />
+      </VBox.margin>
+    </HBox>
+
+    <HBox>
+        <Label prefWidth="100" text="Nickname:" />
+        <TextField fx:id="tfNickname" promptText="nickname" HBox.hgrow="ALWAYS" />
+      <VBox.margin>
+         <Insets left="20.0" right="20.0" />
+      </VBox.margin>
+    </HBox>
+
+    <VBox alignment="CENTER">
+        <VBox.margin>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        </VBox.margin>
+
+        <TextArea fx:id="textArea" VBox.vgrow="ALWAYS" />
+        <Button alignment="BOTTOM_CENTER" contentDisplay="CENTER" onAction="#onActionBtnReg" text="Sign Up" />
+    </VBox>
+
+</VBox>
