@@ -105,7 +105,7 @@ public class Controller implements Initializable {
 
     private void createRegWindow() {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../../resources/registration.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/registration.fxml"));
             Parent root = fxmlLoader.load();
             regStage = new Stage();
             regStage.setTitle("Sign Up");
