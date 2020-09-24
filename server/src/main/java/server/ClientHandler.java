@@ -15,6 +15,7 @@ public class ClientHandler {
     private DataOutputStream dos;
 
     private String id = "";
+    private String savedLogin = "";
 
     public ClientHandler(CustomServer server, Socket socket) {
         try {
@@ -69,6 +70,7 @@ public class ClientHandler {
                         System.out.println("Session time is set to infinity");
 
                         id = savedNick;
+                        savedLogin = login;
                         sendMessage(AUTHOK.getCommand() + " " + savedNick);
 
                         server.subscribe(this);
@@ -116,6 +118,19 @@ public class ClientHandler {
                         continue;
                     }
                     server.broadcast(this, token[1], token[2]);
+                }
+
+                if (msg.startsWith(CHANGE_NICK.getCommand())) {
+                    String[] token = msg.split("\\s+", 2);
+                    if (token.length < 2) {
+                        continue;
+                    }
+                    if (server.getAuthService().changeNickByLogin(savedLogin, token[1]) != null) {
+                        sendMessage(CHANGE_OK.getCommand());
+                    }
+                    else {
+                        sendMessage(CHANGE_NO.getCommand());
+                    }
                 }
             }
             else {

@@ -1,8 +1,11 @@
 package server;
 
+import data.DBHandler;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,24 +20,28 @@ public class CustomServer {
     private AuthService authService;
 
     public CustomServer() {
-        clients = new ArrayList<ClientHandler>();
-        authService = new BaseAuthService();
+        clients = new ArrayList<>();
 
         try {
-            server = new ServerSocket(PORT);
-            System.out.println("Server is running");
+            if (DBHandler.connect()) {
+                authService = new DBAuthService();
+                server = new ServerSocket(PORT);
+                System.out.println("Server is running");
 
-            authService.start();
+                authService.start();
 
-            while (true) {
-                socket = server.accept();  // переводим основной поток в режим ожидания
-                System.out.println("Client is authorized");
-                new ClientHandler(this, socket);
+                while (true) {
+                    socket = server.accept();  // переводим основной поток в режим ожидания
+                    System.out.println("Client is authorized");
+                    new ClientHandler(this, socket);
+                }
             }
 
-        } catch (IOException e) {
+        } catch (IOException e1) {
             System.out.println("Error while server is working");
         } finally {
+            DBHandler.disconnect();
+
             if (authService != null) {
                 authService.stop();
             }
