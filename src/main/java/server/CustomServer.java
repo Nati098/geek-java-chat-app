@@ -17,7 +17,7 @@ public class CustomServer {
     private AuthService authService;
 
     public CustomServer() {
-        clients = new ArrayList<>();
+        clients = new ArrayList<ClientHandler>();
         authService = new BaseAuthService();
 
         try {
