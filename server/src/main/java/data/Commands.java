@@ -6,6 +6,9 @@ public enum Commands {
     REG_NO("/regno"),
     AUTH("/auth"),
     AUTHOK("/authok"),
+    CHANGE_NICK("/changenick"),
+    CHANGE_OK("/changeok"),
+    CHANGE_NO("/changeno"),
     END("/end"),
     PRIVATE_MSG("/w"),
     CLIENTS_LIST("/clientlist");

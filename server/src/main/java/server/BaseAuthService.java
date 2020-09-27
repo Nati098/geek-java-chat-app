@@ -1,6 +1,6 @@
 package server;
 
-import data.DataBase;
+import data.DBHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +11,10 @@ public class BaseAuthService implements AuthService {
 
     public BaseAuthService() {
         users = new ArrayList<>();
-        for (int i=0; i < DataBase.logins.length; i++) {
-            users.add(new UserData(DataBase.logins[i],
-                                   DataBase.passwords[i],
-                                   DataBase.nicks[i]));
+        for (int i = 0; i < DBHandler.logins.length; i++) {
+            users.add(new UserData(DBHandler.logins[i],
+                                   DBHandler.passwords[i],
+                                   DBHandler.nicks[i]));
         }
     }
 
@@ -31,6 +31,11 @@ public class BaseAuthService implements AuthService {
             }
         }
 
+        return null;
+    }
+
+    @Override
+    public String changeNickByLogin(String login, String newNick) {
         return null;
     }
 

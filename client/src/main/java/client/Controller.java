@@ -144,6 +144,12 @@ public class Controller implements Initializable {
                         if (msg.startsWith(REG_NO.getCommand())) {
                             regController.appendToTextArea("Sign up failed: user already exists");
                         }
+                        if (msg.startsWith(CHANGE_OK.getCommand())) {
+                            taChat.appendText(formatMsg("Server:\nNick was changed!\n"));
+                        }
+                        if (msg.startsWith(CHANGE_NO.getCommand())) {
+                            taChat.appendText(formatMsg("Server:\nNick wasn't changed!\n"));
+                        }
 
                         taChat.appendText(msg + endOfMsg);
                     }
