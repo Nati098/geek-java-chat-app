@@ -289,7 +289,6 @@ public class Controller implements Initializable {
     }
 
     private String readHistoryFromFile() {
-//        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(String.format(filenamePattern, nickname)))) {
         try (RandomAccessFile raf = new RandomAccessFile(String.format(filenamePattern, nickname), "r")) {
             // go to the end of the file
             long currentPos = raf.length() - 2;
