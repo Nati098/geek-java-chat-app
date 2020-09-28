@@ -15,15 +15,15 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import server.CustomServer;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedList;
 import java.util.ResourceBundle;
 
 import static data.Commands.*;
@@ -33,6 +33,8 @@ public class Controller implements Initializable {
     private final String IP_ADDRESS = "localhost";
     private final String TITLE = "Chatty";
     private final String endOfMsg = "\n";
+    private final String filenamePattern = "history/history_%s.txt";
+    private final int HISTORY_LIMIT = 100; // how many strokes we should add in the beginning
 
     @FXML
     public BorderPane bpAuth;
@@ -68,16 +70,7 @@ public class Controller implements Initializable {
         createRegWindow();
         Platform.runLater(() -> {
             Stage stage = (Stage) tfMessage.getScene().getWindow();
-            stage.setOnCloseRequest(event -> {
-                System.out.println("Goodbye!");
-                if (socket != null && !socket.isClosed()) {
-                    try {
-                        dos.writeUTF("/end");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
+            stage.setOnCloseRequest(event -> onCloseRequest(event));
         });
     }
 
@@ -97,7 +90,14 @@ public class Controller implements Initializable {
 
         taChat.clear();
         if (isAuthenticated) {
-            taChat.appendText(formatMsg("Server:\nWelcome!\n"));
+            String history = readHistoryFromFile();
+            if (history != null) {
+                taChat.appendText("Restoring from file...\n");
+                taChat.appendText(history);
+            }
+            else {
+                taChat.appendText(formatMsg("Server:\nWelcome!\n"));
+            }
         }
 
         setTitle(nickname);
@@ -159,6 +159,7 @@ public class Controller implements Initializable {
 
                         if (msg.startsWith("/")) {
                             if (msg.equals(END.getCommand())) {
+                                saveHistoryToFile();
                                 break;
                             }
                             if (msg.startsWith(CLIENTS_LIST.getCommand())) {
@@ -274,4 +275,59 @@ public class Controller implements Initializable {
         System.out.println(msg);
     }
 
+    private void onCloseRequest(WindowEvent event) {
+        saveHistoryToFile();
+
+        System.out.println("Goodbye!");
+        if (socket != null && !socket.isClosed()) {
+            try {
+                dos.writeUTF("/end");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String readHistoryFromFile() {
+//        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(String.format(filenamePattern, nickname)))) {
+        try (RandomAccessFile raf = new RandomAccessFile(String.format(filenamePattern, nickname), "r")) {
+            // go to the end of the file
+            long currentPos = raf.length() - 2;
+
+            // add messages from the end (100)
+            int linesNumber = 0;
+            StringBuilder msgs = new StringBuilder();
+            for (long p = currentPos; p >=0; p--) {
+                raf.seek(p);
+                char c = (char) raf.readByte();
+                msgs.append(c);
+
+                if (c == '\n') {
+                    linesNumber++;
+                }
+
+                if (linesNumber == HISTORY_LIMIT) {
+                    break;
+                }
+            }
+
+            return msgs.reverse().toString();
+
+        } catch (IOException e1) {
+            System.out.println("No such file or directory");
+            return null;
+        }
+    }
+
+    private void saveHistoryToFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(String.format(filenamePattern, nickname), false))) {
+
+            writer.write(taChat.getText());
+
+            System.out.println("History was saved");
+        } catch (IOException e) {
+            System.out.println("Cannot save history to file");
+        }
+
+    }
 }
