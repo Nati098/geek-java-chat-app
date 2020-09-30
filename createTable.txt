@@ -1,0 +1,28 @@
+PRAGMA foreign_keys = 0;
+
+CREATE TABLE sqlitestudio_temp_table AS SELECT *
+                                          FROM users;
+
+DROP TABLE users;
+
+CREATE TABLE users (
+    login    TEXT   NOT NULL
+                    PRIMARY KEY,
+    nickname TEXT   UNIQUE
+                    NOT NULL,
+    password STRING NOT NULL
+);
+
+INSERT INTO users (
+                      login,
+                      nickname,
+                      password
+                  )
+                  SELECT login,
+                         nickname,
+                         password
+                    FROM sqlitestudio_temp_table;
+
+DROP TABLE sqlitestudio_temp_table;
+
+PRAGMA foreign_keys = 1;
