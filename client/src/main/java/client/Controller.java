@@ -15,15 +15,15 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import server.CustomServer;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedList;
 import java.util.ResourceBundle;
 
 import static data.Commands.*;
@@ -59,6 +59,7 @@ public class Controller implements Initializable {
     DataOutputStream dos;
 
     private boolean isAuthenticated;
+    private String login;
     private String nickname;
 
 
@@ -68,16 +69,7 @@ public class Controller implements Initializable {
         createRegWindow();
         Platform.runLater(() -> {
             Stage stage = (Stage) tfMessage.getScene().getWindow();
-            stage.setOnCloseRequest(event -> {
-                System.out.println("Goodbye!");
-                if (socket != null && !socket.isClosed()) {
-                    try {
-                        dos.writeUTF("/end");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
+            stage.setOnCloseRequest(event -> onCloseRequest(event));
         });
     }
 
@@ -97,7 +89,19 @@ public class Controller implements Initializable {
 
         taChat.clear();
         if (isAuthenticated) {
-            taChat.appendText(formatMsg("Server:\nWelcome!\n"));
+            String history = History.getLastMessages(login);
+            if (history != null) {
+                taChat.appendText("Restoring from file...\n");
+                taChat.appendText(history);
+            }
+            else {
+                taChat.appendText(formatMsg("Server:\nWelcome!\n"));
+            }
+            History.start(login);
+        }
+
+        if (!isAuthenticated) {
+            History.stop();
         }
 
         setTitle(nickname);
@@ -159,6 +163,7 @@ public class Controller implements Initializable {
 
                         if (msg.startsWith("/")) {
                             if (msg.equals(END.getCommand())) {
+                                History.stop();
                                 break;
                             }
                             if (msg.startsWith(CLIENTS_LIST.getCommand())) {
@@ -173,6 +178,8 @@ public class Controller implements Initializable {
                         } else {
                             String message = formatMsg(msg);
                             taChat.appendText(message);
+
+                            History.writeToFile(message);
                         }
                     }
 
@@ -210,6 +217,7 @@ public class Controller implements Initializable {
             dos.writeUTF(String.format("%s %s %s", AUTH.getCommand(),
                                                    tfLogin.getText().trim().toLowerCase(),
                                                    pfPassword.getText().trim()));
+            login = tfLogin.getText().trim().toLowerCase();
             tfLogin.clear();
             pfPassword.clear();
         } catch (IOException e) {
@@ -223,7 +231,6 @@ public class Controller implements Initializable {
 
     public void onActionBtnSend(ActionEvent actionEvent) {
         try {
-//            String message = formatMsg(nickname, tfMessage.getText());
             dos.writeUTF(tfMessage.getText());
             tfMessage.clear();
             tfMessage.requestFocus();
@@ -274,4 +281,58 @@ public class Controller implements Initializable {
         System.out.println(msg);
     }
 
+    private void onCloseRequest(WindowEvent event) {
+        History.stop();
+
+        System.out.println("Goodbye!");
+        if (socket != null && !socket.isClosed()) {
+            try {
+                dos.writeUTF("/end");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+//    private String readHistoryFromFile() {
+//        try (RandomAccessFile raf = new RandomAccessFile(String.format(filenamePattern, login), "r")) {
+//            // go to the end of the file
+//            long currentPos = raf.length() - 2;
+//
+//            // add messages from the end (100)
+//            int linesNumber = 0;
+//            StringBuilder msgs = new StringBuilder();
+//            for (long p = currentPos; p >=0; p--) {
+//                raf.seek(p);
+//                char c = (char) raf.readByte();
+//                msgs.append(c);
+//
+//                if (c == '\n') {
+//                    linesNumber++;
+//                }
+//
+//                if (linesNumber == HISTORY_LIMIT) {
+//                    break;
+//                }
+//            }
+//
+//            return msgs.reverse().toString();
+//
+//        } catch (IOException e1) {
+//            System.out.println("No such file or directory");
+//            return null;
+//        }
+//    }
+//
+//    private void saveHistoryToFile() {
+//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(String.format(filenamePattern, login), false))) {
+//
+//            writer.write(taChat.getText());
+//
+//            System.out.println("History was saved");
+//        } catch (IOException e) {
+//            System.out.println("Cannot save history to file");
+//        }
+//
+//    }
 }
