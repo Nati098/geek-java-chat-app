@@ -8,11 +8,16 @@ import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.*;
 
 import static data.Commands.CLIENTS_LIST;
 
 public class CustomServer {
     public static final int PORT = 8189;
+    public static final String LOGFILE_PATH = "log_%g.log";
+
+    private Logger logger;
+
     private ServerSocket server;
     private Socket socket;
 
@@ -20,25 +25,27 @@ public class CustomServer {
     private AuthService authService;
 
     public CustomServer() {
+        setupLogger();
+
         clients = new ArrayList<>();
 
         try {
             if (DBHandler.connect()) {
                 authService = new DBAuthService();
                 server = new ServerSocket(PORT);
-                System.out.println("Server is running");
+                logger.info("Server is running");
 
                 authService.start();
 
                 while (true) {
                     socket = server.accept();  // переводим основной поток в режим ожидания
-                    System.out.println("Client is authorized");
+                    logger.info("Client is authorized");
                     new ClientHandler(this, socket);
                 }
             }
 
         } catch (IOException e1) {
-            System.out.println("Error while server is working");
+            logger.severe("Error while server is working");
         } finally {
             DBHandler.disconnect();
 
@@ -52,6 +59,19 @@ public class CustomServer {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void setupLogger() {
+        logger = Logger.getLogger(CustomServer.class.getName());
+        logger.addHandler(new ConsoleHandler());
+        try {
+            Handler fileHandler = fileHandler = new FileHandler(LOGFILE_PATH,11 * 1024 * 1024, 11, true);
+            fileHandler.setFormatter(new SimpleFormatter());
+            logger.addHandler(fileHandler);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        logger.setUseParentHandlers(false);
     }
 
     public void subscribe(ClientHandler c) {
