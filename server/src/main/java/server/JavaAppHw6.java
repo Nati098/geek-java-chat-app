@@ -6,10 +6,7 @@ import java.util.Arrays;
 public class JavaAppHw6 {
 
     public static void main(String[] args) {
-//        System.out.println(containsOnly1And4(new int[]{ 1, 1, 1, 4, 4, 1, 4, 4}));
-//        System.out.println(containsOnly1And4(new int[]{ }));
-//        System.out.println(containsOnly1And4(new int[]{ 1, 1, 1, 1}));
-//        System.out.println(containsOnly1And4(new int[]{ 1, 1, 1, 4, 4, 3, 4, 4}));
+        
     }
 
     public static int[] getAllAfterLast4(int[] init) {
