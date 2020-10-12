@@ -23,10 +23,11 @@ import java.net.Socket;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedList;
 import java.util.ResourceBundle;
+import java.util.logging.*;
 
 import static data.Commands.*;
+import static server.CustomServer.LOGFILE_PATH;
 
 
 public class Controller implements Initializable {
@@ -54,6 +55,8 @@ public class Controller implements Initializable {
     private Stage regStage;
     private RegController regController;
 
+    private Logger logger;
+
     private Socket socket;
     DataInputStream dis;
     DataOutputStream dos;
@@ -66,11 +69,25 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setAuthenticated(false);
+        setupLogger();
         createRegWindow();
         Platform.runLater(() -> {
             Stage stage = (Stage) tfMessage.getScene().getWindow();
             stage.setOnCloseRequest(event -> onCloseRequest(event));
         });
+    }
+
+    private void setupLogger() {
+        logger = Logger.getLogger(CustomServer.class.getName());
+        logger.addHandler(new ConsoleHandler());
+        try {
+            Handler fileHandler = fileHandler = new FileHandler(LOGFILE_PATH,11 * 1024 * 1024, 11, true);
+            fileHandler.setFormatter(new SimpleFormatter());
+            logger.addHandler(fileHandler);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        logger.setUseParentHandlers(false);
     }
 
     private void setAuthenticated(boolean isAuthenticated) {
@@ -186,7 +203,7 @@ public class Controller implements Initializable {
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
-                    System.out.println(nickname + " disconnected from server");
+                    logger.warning(nickname + " disconnected from server");
                     setAuthenticated(false);
                     try {
                         socket.close();
@@ -278,13 +295,13 @@ public class Controller implements Initializable {
             e.printStackTrace();
         }
 
-        System.out.println(msg);
+        logger.info("Message:" + msg);
     }
 
     private void onCloseRequest(WindowEvent event) {
         History.stop();
 
-        System.out.println("Goodbye!");
+        logger.info("Goodbye!");
         if (socket != null && !socket.isClosed()) {
             try {
                 dos.writeUTF("/end");

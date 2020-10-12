@@ -5,10 +5,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.logging.*;
 
 import static data.Commands.*;
+import static server.CustomServer.LOGFILE_PATH;
 
 public class ClientHandler {
+    private Logger logger;
+
     private CustomServer server;
     private Socket socket;
     private DataInputStream dis;
@@ -18,6 +22,8 @@ public class ClientHandler {
     private String savedLogin = "";
 
     public ClientHandler(CustomServer server, Socket socket) {
+        setupLogger();
+
         try {
             this.server = server;
             this.socket = socket;
@@ -32,7 +38,7 @@ public class ClientHandler {
                     readMessages();
                 }
                 catch (SocketTimeoutException ste) {
-                    System.out.println("Session timeout");
+                    logger.warning("Session timeout");
 //                    server.handleInactiveUser(this);
                 }
                 catch (IOException e) {
@@ -54,6 +60,19 @@ public class ClientHandler {
         return id;
     }
 
+    private void setupLogger() {
+        logger = Logger.getLogger(CustomServer.class.getName());
+        logger.addHandler(new ConsoleHandler());
+        try {
+            Handler fileHandler = fileHandler = new FileHandler(LOGFILE_PATH,11 * 1024 * 1024, 11, true);
+            fileHandler.setFormatter(new SimpleFormatter());
+            logger.addHandler(fileHandler);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        logger.setUseParentHandlers(false);
+    }
+
     private void authentication() throws IOException {
         while (true) {
             String msg = dis.readUTF();
@@ -67,7 +86,7 @@ public class ClientHandler {
                 if (savedNick != null) {
                     if (!server.isLoginAuthenticated(login)) {
                         socket.setSoTimeout(0);
-                        System.out.println("Session time is set to infinity");
+                        logger.info("Session time is set to infinity");
 
                         id = savedNick;
                         savedLogin = login;
@@ -75,7 +94,7 @@ public class ClientHandler {
 
                         server.subscribe(this);
                         //server.broadcast(this, "is online");
-                        System.out.println(String.format("User %s connected", id));
+                        logger.info(String.format("User %s connected", id));
                         break;
                     } else {
                         sendMessage("This user is already online");
@@ -140,7 +159,7 @@ public class ClientHandler {
     }
 
     private void closeConnection() {
-        System.out.println(String.format("%s disconnected", id));
+        logger.warning(String.format("%s disconnected", id));
         server.unsubscribe(this);
 
 //        server.broadcast(this, "went out from chat");
